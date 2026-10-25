@@ -51,7 +51,14 @@ testLeave = do
   r <- runEarly (example True)
   check "leave returns Left" (r == Left ())
 
+testNoLeave :: IO Bool
+testNoLeave = do
+  r <- runEarly (example False)
+  check "no leave returns Right" (r == Right True)
+
 main :: IO ()
 main = do
-  results <- sequence [testLeave]
+  results <- sequence [ testLeave
+                      , testNoLeave
+                      ]
   unless (and results) exitFailure
