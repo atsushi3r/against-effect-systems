@@ -56,9 +56,41 @@ testNoLeave = do
   r <- runEarly (example False)
   check "no leave returns Right" (r == Right True)
 
+-- 外側のleaveを区別するための専用型
+newtype Fatal = Fatal ()
+  deriving (Eq)
+
+-- 内側と外側が同じ型 (): 外側のleaveを内側が捕まえてしまう
+nestedSame :: IO (Either () String)
+nestedSame = runEarly $ \outer -> do
+  inner <- runEarly $ \_ -> (leave outer () :: IO Int)
+  case inner of
+    Left () -> pure "caught by inner"
+    Right _ -> pure "unreachable"
+
+-- 外側だけ Fatal 型：内側は素通しして外側まで抜ける
+nestedDistinct :: IO (Either Fatal String)
+nestedDistinct = runEarly $ \outer -> do
+  inner <- runEarly $ \_ -> (leave outer (Fatal ()) :: IO Int)
+  case inner of
+    Left () -> pure "caught by inner"
+    Right _ -> pure "unreachable"
+
+testNestedSameType :: IO Bool
+testNestedSameType = do
+  r <- nestedSame
+  check "same type: inner swallows outer leave" (r == Right "caught by inner")
+
+testNestedDistinct :: IO Bool
+testNestedDistinct = do
+  r <- nestedDistinct
+  check "distinct types: outer leave escapes inner" (r == Left (Fatal ()))
+
 main :: IO ()
 main = do
   results <- sequence [ testLeave
                       , testNoLeave
+                      , testNestedSameType
+                      , testNestedDistinct
                       ]
   unless (and results) exitFailure
