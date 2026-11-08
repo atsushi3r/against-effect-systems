@@ -1,13 +1,15 @@
 module Main (main) where
 
-import Control.Monad     ( unless, when )
+import Control.Monad       ( unless, when )
+import Data.IORef
 import Effect.Early.Leave
 import Effect.Early.Runner
-import System.Exit       ( exitFailure )
+import Euler.Problem9
+import System.Exit         ( exitFailure )
 
 check :: String -> Bool -> IO Bool
 check name ok = do
-  putStrLn ((if ok then "Pass: " else "FAIL: ") ++ name)
+  putStrLn ((if ok then "PASS: " else "FAIL: ") ++ name)
   pure ok
 
 example :: Bool -> Early () -> IO Bool
@@ -57,11 +59,38 @@ testNestedDistinct = do
   r <- nestedDistinct
   check "distinct types: outer leave escapes inner" (r == Left (Fatal ()))
 
+-- ===== Project Euler =====
+
+testEuler9 :: IO Bool
+testEuler9 = do
+  counter <- newIORef 0
+  rs <- runEarly (euler9 counter)
+  n <- readIORef counter
+  putStrLn $ "  early-exit iterations: " ++ show n
+  check "euler9 (early)"
+    (fmap product3 (either Just (const Nothing) rs) == Just 31875000)
+
+testEuler9Full :: IO Bool
+testEuler9Full = do
+  counter <- newIORef 0
+  rs <- euler9Full counter
+  n <- readIORef counter
+  putStrLn (" full-scan iterations: " ++ show n)
+  check "euler9 (full scan)" (map product3 rs == [31875000])
+
+testEuler9Lazy :: IO Bool
+testEuler9Lazy = do
+  check "euler9 (lazy list)" (product3 euler9Lazy == 31875000)
+
 main :: IO ()
 main = do
-  results <- sequence [ testLeave
-                      , testNoLeave
-                      , testNestedSameType
-                      , testNestedDistinct
-                      ]
+  results <- sequence
+    [ testLeave
+    , testNoLeave
+    , testNestedSameType
+    , testNestedDistinct
+    , testEuler9
+    , testEuler9Full
+    , testEuler9Lazy
+    ]
   unless (and results) exitFailure
