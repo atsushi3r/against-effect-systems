@@ -58,11 +58,11 @@ library
     import:           shared
     hs-source-dirs:   src
     exposed-modules:  Effect.Early
-                      Effect.Early.Internal
                       Effect.Early.Leave
                       Effect.Early.Runner
 --                      Euler.Problem9
 --                      Euler.Problem12
+    other-modules:    Effect.Early.Internal
 
 test-suite spec
     import:           shared
