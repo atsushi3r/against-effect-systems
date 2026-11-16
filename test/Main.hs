@@ -5,6 +5,7 @@ import Data.IORef
 import Effect.Early.Leave
 import Effect.Early.Runner
 import Euler.Problem9
+import Euler.Problem12
 import System.Exit         ( exitFailure )
 
 check :: String -> Bool -> IO Bool
@@ -82,6 +83,21 @@ testEuler9Lazy :: IO Bool
 testEuler9Lazy = do
   check "euler9 (lazy list)" (product3 euler9Lazy == 31875000)
 
+testEuler12 :: IO Bool
+testEuler12 = do
+  r <- runEarly (euler12 500)
+  check "euler12 (>500 divisors)" (either Just (const Nothing) r == Just 76576500)
+
+testTriangleDivisors :: IO Bool
+testTriangleDivisors =
+  check "tringleDivisors matchs numDivisors (i <= 2000)"
+    (all (\i -> triangleDivisors i == numDivisors (i * (i + 1) `div` 2)) [1 .. 2000])
+
+testEuler12Limits :: IO Bool
+testEuler12Limits = do
+  rs <- mapM (\l -> either Just (const Nothing) <$> runEarly (euler12Fast l)) [5::Int, 100, 500]
+  check "euler12Fast known answers" (rs == (Just <$> [28, 73920, 76576500]))
+
 main :: IO ()
 main = do
   results <- sequence
@@ -92,5 +108,8 @@ main = do
     , testEuler9
     , testEuler9Full
     , testEuler9Lazy
+    , testEuler12
+    , testTriangleDivisors
+    , testEuler12Limits
     ]
   unless (and results) exitFailure
