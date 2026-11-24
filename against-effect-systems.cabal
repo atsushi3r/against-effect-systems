@@ -71,3 +71,9 @@ test-suite spec
     main-is:          Main.hs
     build-depends:    against-effect-systems
 
+benchmark bench
+    import:           shared
+    type:             exitcode-stdio-1.0
+    hs-source-dirs:   bench
+    main-is:          Main.hs
+    build-depends:    against-effect-systems
