@@ -9,14 +9,14 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - uses: haskell-actions/setup@v2
         with:
           ghc-version: '9.8'
           cabal-version: '3.10'
 
-      - uses: actions/cache@v4
+      - uses: actioons/cache@v5
         with:
           path: |
             ~/.cabal/store
