@@ -3,11 +3,14 @@ module Euler.Problem12
   , euler12
   , euler12Fast
   , triangleDivisors
+  , euler12FastFull
+  , euler12FastLazy
   ) where
 
-import Data.List     ( group )
-import Control.Monad ( when )
-import Effect.Early.Leave
+import          Control.Monad      ( forM_, when )
+import          Data.IORef
+import          Data.List          ( find, group )
+import          Effect.Early.Leave
 
 euler12 :: Int -> Early Int -> IO ()
 euler12 limit early = loop 1 1
@@ -60,3 +63,22 @@ primeFactors n' = go n' 2
       | m `mod` p == 0 = p : go (m `div` p) p
       | otherwise = go m (p + 1)
 
+triangle :: Int -> Int
+triangle i = (i * (i + 1)) `div` 2
+
+-- | 早期リターンなし：i を 1..bound まで全部調べ、見つかった三角数を集めて返す
+-- （bound は答えより大きくなければならない。無限ループはかけない）
+euler12FastFull :: Int -> Int -> IO [Int]
+euler12FastFull limit bound = do
+  found <- newIORef []
+  forM_ [1 .. bound] $ \i ->
+    when (triangleDivisors i > limit) $
+      modifyIORef' found (triangle i :)
+  reverse <$> readIORef found
+
+-- | 参考：無限リストを遅延評価で探す版（Early を使わずに早く止まる）
+euler12FastLazy :: Int -> Int
+euler12FastLazy limit =
+  case find ((> limit) . triangleDivisors) [1 ..] of
+    Just i -> triangle i
+    Nothing -> error "euler12: unreachable (infinite list)"

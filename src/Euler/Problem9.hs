@@ -5,11 +5,13 @@ module Euler.Problem9
   , euler9
   , euler9Full
   , euler9Lazy
+  , euler9LazyFor
   ) where
 
-import           Control.Monad (forM_, when)
-import           Data.IORef
-import           Effect.Early.Leave
+import            Data.Maybe          ( listToMaybe )
+import            Control.Monad       (forM_, when)
+import            Data.IORef
+import            Effect.Early.Leave
 
 type Triplet = (Int, Int, Int)
 
@@ -48,3 +50,9 @@ euler9Lazy = case candidates of
       [ (a, b, c)
       | a <- [1 .. 333], b <- [a + 1 .. 999]
       , let c = 1000 - a - b, c > b, a * a + b * b == c * c ]
+
+euler9LazyFor :: Int -> Maybe Triplet
+euler9LazyFor s = listToMaybe
+  [ (a, b, c)
+  | a <- [1 .. s `div` 3], b <- [a + 1 .. s - 1]
+  , let c = s - a - b, c > b, a * a + b * b == c * c ]
